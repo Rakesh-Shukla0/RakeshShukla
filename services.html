@@ -16,263 +16,6 @@ content="Modern web development, responsive frontend design, and digital solutio
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=Space+Mono:wght@400;700&display=swap"
 rel="stylesheet">
 
-
-<!-- =====================================================
-     FIREBASE
-===================================================== -->
-
-<script type="module">
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-
-import {
-    getAuth,
-    GoogleAuthProvider,
-    signInWithPopup,
-    onAuthStateChanged,
-    signOut
-}
-from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-
-/* Firebase Configuration */
-const firebaseConfig = {
-  apiKey: "AIzaSyDBwbJZ3GUkomQRbSV5vKIzqCcO3Mr-r0k",
-  authDomain: "rakesh-shukla.firebaseapp.com",
-  projectId: "rakesh-shukla",
-  storageBucket: "rakesh-shukla.firebasestorage.app",
-  messagingSenderId: "505121637832",
-  appId: "1:505121637832:web:b14da18a3a5aa5935eecfd",
-  measurementId: "G-E43GC2DBEF"
-};
-
-/* Initialize Firebase */
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-
-
-/* =====================================================
-   ELEMENTS
-===================================================== */
-
-const loginModal = document.getElementById("loginModal");
-const loginButton = document.getElementById("googleLogin");
-const closeLogin = document.getElementById("closeLogin");
-const profileButton = document.getElementById("profileButton");
-const profileMenu = document.getElementById("profileMenu");
-const logoutButton = document.getElementById("logoutButton");
-const profileImage = document.getElementById("profileImage");
-const profileMenuImage = document.getElementById("profileMenuImage");
-const profileName = document.getElementById("profileName");
-const profileEmail = document.getElementById("profileEmail");
-const loginError = document.getElementById("loginError");
-const navLoginBtn = document.getElementById("navLoginBtn");
-
-
-/* =====================================================
-   LOGIN MODAL
-===================================================== */
-
-function openLogin() {
-    loginModal.classList.add("show");
-    document.body.classList.add("modal-open");
-}
-
-function closeLoginModal() {
-    loginModal.classList.remove("show");
-    document.body.classList.remove("modal-open");
-}
-
-if (closeLogin) {
-    closeLogin.addEventListener("click", closeLoginModal);
-}
-
-if (navLoginBtn) {
-    navLoginBtn.addEventListener("click", openLogin);
-}
-
-if (loginModal) {
-    loginModal.addEventListener("click", function(event) {
-        if (event.target === loginModal) {
-            closeLoginModal();
-        }
-    });
-}
-
-
-/* =====================================================
-   GOOGLE LOGIN
-===================================================== */
-
-if (loginButton) {
-    loginButton.addEventListener("click", async function() {
-        loginButton.disabled = true;
-        loginButton.innerHTML = `<span class="spinner"></span> Signing in...`;
-        loginError.textContent = "";
-
-        try {
-            await signInWithPopup(auth, provider);
-            closeLoginModal();
-        }
-        catch(error) {
-            console.error(error);
-            loginError.textContent = "Google login failed: " + (error.message || "Please try again.");
-        }
-
-        loginButton.disabled = false;
-        loginButton.innerHTML = `
-            <svg width="18" height="18" viewBox="0 0 24 24" style="margin-right:6px;">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            Continue with Google
-        `;
-    });
-}
-
-
-/* =====================================================
-   AUTH STATE (FLICKER FREE)
-===================================================== */
-
-onAuthStateChanged(auth, function(user) {
-    if (user) {
-        document.body.classList.add("user-logged-in");
-
-        if (navLoginBtn) navLoginBtn.style.display = "none";
-        if (profileButton) profileButton.classList.add("visible");
-
-        const photo = user.photoURL || "https://via.placeholder.com/100";
-        if (profileImage) profileImage.src = photo;
-        if (profileMenuImage) profileMenuImage.src = photo;
-
-        if (profileName) profileName.textContent = user.displayName || "User";
-        if (profileEmail) profileEmail.textContent = user.email || "";
-    }
-    else {
-        document.body.classList.remove("user-logged-in");
-
-        if (navLoginBtn) navLoginBtn.style.display = "inline-flex";
-        if (profileButton) profileButton.classList.remove("visible");
-        if (profileMenu) profileMenu.classList.remove("show");
-    }
-});
-
-
-/* =====================================================
-   PROFILE MENU
-===================================================== */
-
-if (profileButton) {
-    profileButton.addEventListener("click", function() {
-        profileMenu.classList.toggle("show");
-    });
-}
-
-
-/* =====================================================
-   LOGOUT
-===================================================== */
-
-if (logoutButton) {
-    logoutButton.addEventListener("click", async function() {
-        try {
-            await signOut(auth);
-            if (profileMenu) profileMenu.classList.remove("show");
-        }
-        catch(error) {
-            console.error(error);
-        }
-    });
-}
-
-
-/* =====================================================
-   MOBILE NAVIGATION
-===================================================== */
-
-const menuButton = document.querySelector(".menu-button");
-const nav = document.querySelector(".nav-links");
-
-if (menuButton && nav) {
-    menuButton.addEventListener("click", function() {
-        nav.classList.toggle("open");
-    });
-
-    document.querySelectorAll(".nav-links a").forEach(function(link) {
-        link.addEventListener("click", function() {
-            nav.classList.remove("open");
-        });
-    });
-}
-
-
-/* =====================================================
-   SCROLL REVEAL
-===================================================== */
-
-const revealObserver = new IntersectionObserver(
-    function(entries) {
-        entries.forEach(function(entry) {
-            if (entry.isIntersecting) {
-                entry.target.classList.add("show");
-                revealObserver.unobserve(entry.target);
-            }
-        });
-    },
-    { threshold: 0.12 }
-);
-
-document.querySelectorAll(".reveal").forEach(function(element) {
-    revealObserver.observe(element);
-});
-
-
-/* =====================================================
-   CUSTOM CURSOR
-===================================================== */
-
-const cursor = document.querySelector(".custom-cursor");
-
-if (cursor && window.matchMedia("(pointer:fine)").matches) {
-    document.addEventListener("mousemove", function(event) {
-        cursor.style.left = event.clientX + "px";
-        cursor.style.top = event.clientY + "px";
-    });
-
-    document.querySelectorAll("a,button,.service-card,.feature-card,.pricing-card,.faq-item,.tech-card").forEach(function(element) {
-        element.addEventListener("mouseenter", function() {
-            cursor.classList.add("big");
-        });
-        element.addEventListener("mouseleave", function() {
-            cursor.classList.remove("big");
-        });
-    });
-}
-
-
-/* =====================================================
-   CLOSE PROFILE ON CLICK OUTSIDE
-===================================================== */
-
-document.addEventListener("click", function(event) {
-    if (
-        profileButton &&
-        profileMenu &&
-        !profileButton.contains(event.target) &&
-        !profileMenu.contains(event.target)
-    ) {
-        profileMenu.classList.remove("show");
-    }
-});
-
-</script>
-
-
 <style>
 
 /* =====================================================
@@ -436,130 +179,6 @@ button {
     background: var(--primary-light);
 }
 
-.nav-login-btn {
-    display: none;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 15px;
-    margin-left: 6px;
-    border-radius: 12px;
-    background: #ffffff;
-    color: #1e293b;
-    font-size: .86rem;
-    font-weight: 600;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: .25s ease;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-}
-
-.nav-login-btn:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
-}
-
-
-/* =====================================================
-   PROFILE
-===================================================== */
-
-.profile-area {
-    position: relative;
-}
-
-.profile-button {
-    display: none;
-    width: 42px;
-    height: 42px;
-    border: 2px solid white;
-    border-radius: 50%;
-    padding: 0;
-    overflow: hidden;
-    cursor: pointer;
-    background: #f1f5f9;
-    box-shadow: 0 4px 15px rgba(15, 23, 42, .12);
-}
-
-.profile-button.visible {
-    display: block;
-}
-
-.profile-button img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.profile-menu {
-    position: absolute;
-    right: 0;
-    top: 54px;
-    width: 240px;
-    padding: 12px;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    box-shadow: var(--shadow);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-8px);
-    transition: .25s;
-}
-
-.profile-menu.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.profile-info {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    padding: 8px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 8px;
-}
-
-.profile-info img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-}
-
-.profile-info strong {
-    display: block;
-    font-size: .88rem;
-}
-
-.profile-info small {
-    display: block;
-    max-width: 145px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: var(--muted);
-    font-size: .72rem;
-}
-
-.logout {
-    width: 100%;
-    padding: 10px;
-    border: 0;
-    background: transparent;
-    border-radius: 10px;
-    text-align: left;
-    color: #ef4444;
-    cursor: pointer;
-    font-weight: 700;
-}
-
-.logout:hover {
-    background: #fef2f2;
-}
-
 .menu-button {
     display: none;
     width: 42px;
@@ -671,7 +290,6 @@ button {
     align-items: center;
 }
 
-/* MONOCHROME SVG ICON BOX */
 .service-icon-box {
     width: 46px;
     height: 46px;
@@ -765,6 +383,42 @@ button {
 
 .service-action-wrap {
     margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* DETAILS BUTTON */
+.service-details-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    padding: 11px;
+    border-radius: 12px;
+    font-size: .86rem;
+    font-weight: 700;
+    color: #1e293b;
+    background: #f1f5f9;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all .25s ease;
+}
+
+.service-details-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke: var(--primary);
+    stroke-width: 2.2;
+    fill: none;
+}
+
+.service-details-btn:hover {
+    background: #e2e8f0;
+    color: var(--primary);
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
 }
 
 .service-card-btn {
@@ -784,6 +438,284 @@ button {
 .service-card:hover .service-card-btn {
     background: var(--primary);
     color: white;
+}
+
+
+/* =====================================================
+   NEW ANIMATED SERVICE DETAILS MODAL
+===================================================== */
+
+.details-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all .35s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 9999;
+}
+
+.details-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.details-modal-box {
+    width: min(650px, 100%);
+    max-height: 88vh;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    box-shadow: 0 40px 120px rgba(15, 23, 42, 0.28);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(30px) scale(0.96);
+    transition: transform .38s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.details-modal.show .details-modal-box {
+    transform: translateY(0) scale(1);
+}
+
+.modal-header-banner {
+    padding: 24px 28px 18px;
+    background: linear-gradient(135deg, #eef2ff 0%, #ecfeff 100%);
+    border-bottom: 1px solid #e2e8f0;
+    position: relative;
+}
+
+.modal-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.modal-tag {
+    font-family: "Space Mono", monospace;
+    font-size: .68rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--primary);
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.modal-price-tag {
+    font-family: "Space Mono", monospace;
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.modal-header-banner h2 {
+    font-family: "Manrope", sans-serif;
+    font-size: 1.65rem;
+    letter-spacing: -.03em;
+    color: var(--text);
+    margin: 4px 0 6px;
+    padding-right: 40px;
+}
+
+.modal-header-banner p {
+    color: var(--muted);
+    font-size: .88rem;
+    line-height: 1.5;
+}
+
+.close-details-modal {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.3rem;
+    display: grid;
+    place-items: center;
+    color: #475569;
+    transition: all .2s;
+    line-height: 1;
+}
+
+.close-details-modal:hover {
+    background: #f1f5f9;
+    color: var(--text);
+    transform: rotate(90deg);
+}
+
+.modal-scroll-content {
+    padding: 24px 28px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-specs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.spec-item {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 13px 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: border-color .2s;
+}
+
+.spec-item:hover {
+    border-color: rgba(79, 70, 229, 0.4);
+}
+
+.spec-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--primary-light);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.spec-icon svg {
+    width: 17px;
+    height: 17px;
+    stroke: var(--primary);
+    stroke-width: 2.2;
+    fill: none;
+}
+
+.spec-info small {
+    display: block;
+    font-family: "Space Mono", monospace;
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: .04em;
+}
+
+.spec-info strong {
+    display: block;
+    font-size: .88rem;
+    color: var(--text);
+    margin-top: 2px;
+    line-height: 1.3;
+}
+
+.modal-features-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px 20px;
+}
+
+.modal-features-card h4 {
+    font-family: "Manrope", sans-serif;
+    font-size: .95rem;
+    color: var(--text);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-features-card h4::before {
+    content: "";
+    width: 4px;
+    height: 15px;
+    background: var(--primary);
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.modal-features-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modal-features-list li {
+    font-size: .84rem;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.modal-features-list li::before {
+    content: "✓";
+    color: #10b981;
+    font-weight: bold;
+    font-size: .9rem;
+}
+
+.modal-footer-action {
+    padding: 16px 28px;
+    border-top: 1px solid var(--border);
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.modal-footer-action .modal-contact-btn {
+    padding: 12px 24px;
+    border-radius: 12px;
+    background: var(--primary);
+    color: white;
+    font-weight: 700;
+    font-size: .9rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+    transition: all .25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.modal-footer-action .modal-contact-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(79, 70, 229, 0.35);
+}
+
+.modal-footer-action .modal-close-text-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 11px 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: .86rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: .2s;
+}
+
+.modal-footer-action .modal-close-text-btn:hover {
+    background: #ffffff;
+    color: var(--text);
 }
 
 
@@ -1167,126 +1099,6 @@ footer {
 
 
 /* =====================================================
-   MODAL
-===================================================== */
-
-.login-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, .35);
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    opacity: 0;
-    visibility: hidden;
-    transition: .3s ease;
-    z-index: 5000;
-}
-
-.login-modal.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-.login-box {
-    width: min(410px, 100%);
-    padding: 38px;
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 26px;
-    box-shadow: 0 35px 100px rgba(15, 23, 42, .2);
-    position: relative;
-    text-align: center;
-    transform: translateY(20px) scale(.97);
-    transition: .3s ease;
-}
-
-.login-modal.show .login-box {
-    transform: translateY(0) scale(1);
-}
-
-.close-login {
-    position: absolute;
-    right: 15px;
-    top: 15px;
-    width: 35px;
-    height: 35px;
-    border: 1px solid var(--border);
-    background: white;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1.1rem;
-}
-
-.login-icon {
-    width: 58px;
-    height: 58px;
-    margin: 0 auto 20px;
-    display: grid;
-    place-items: center;
-    border-radius: 18px;
-    background: var(--primary-light);
-    color: var(--primary);
-    font-family: "Manrope";
-    font-size: 1.5rem;
-    font-weight: 800;
-}
-
-.login-box h2 {
-    font-family: "Manrope";
-    font-size: 1.8rem;
-    letter-spacing: -.05em;
-}
-
-.login-box p {
-    margin: 8px 0 25px;
-    color: var(--muted);
-    font-size: .9rem;
-}
-
-.google-login {
-    width: 100%;
-    padding: 14px;
-    border: 1px solid #d1d5db;
-    border-radius: 13px;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    cursor: pointer;
-    font-weight: 700;
-    transition: .25s;
-}
-
-.google-login:hover {
-    background: #f8fafc;
-    box-shadow: 0 10px 25px rgba(15, 23, 42, .08);
-}
-
-.login-error {
-    color: #ef4444;
-    font-size: .8rem;
-    margin-top: 13px;
-}
-
-.spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid #cbd5e1;
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    animation: spin .7s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-
-/* =====================================================
    REVEAL & CURSOR
 ===================================================== */
 
@@ -1361,6 +1173,7 @@ footer {
     .tech-grid,
     .features-grid,
     .faq-grid { grid-template-columns: 1fr; }
+    .modal-specs-grid { grid-template-columns: 1fr; }
     .footer-inner { flex-direction: column; align-items: flex-start; }
     .custom-cursor { display: none; }
 }
@@ -1372,7 +1185,6 @@ footer {
 
 <body>
 
-
 <div class="background">
     <div class="blob blob-one"></div>
     <div class="blob blob-two"></div>
@@ -1382,7 +1194,7 @@ footer {
 
 
 <!-- =====================================================
-     NAVBAR
+     NAVBAR (CLEAN, NO GOOGLE LOGIN)
 ===================================================== -->
 
 <nav class="navbar">
@@ -1398,39 +1210,9 @@ footer {
         <a href="skills.html">Skills</a>
         <a href="contact.html">Contact</a>
         <a href="about_us.html">About Us</a>
-
-        <!-- GOOGLE LOGIN BUTTON IN NAVBAR
-        <button id="navLoginBtn" class="nav-login-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" style="display:block;">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            <span>Login with Google</span>
-        </button> -->
     </div>
 
-    <div class="profile-area">
-        <button class="profile-button" id="profileButton">
-            <img id="profileImage" src="" alt="Profile">
-        </button>
-
-        <div class="profile-menu" id="profileMenu">
-            <div class="profile-info">
-                <img id="profileMenuImage" src="" alt="User">
-                <div>
-                    <strong id="profileName">User</strong>
-                    <small id="profileEmail"></small>
-                </div>
-            </div>
-            <button class="logout" id="logoutButton">
-                Logout
-            </button>
-        </div>
-    </div>
-
-    <button class="menu-button">☰</button>
+    <button class="menu-button" aria-label="Toggle navigation">☰</button>
 
 </nav>
 
@@ -1453,7 +1235,7 @@ footer {
 
 
 <!-- =====================================================
-     1. SERVICES GRID (CLEAN SVG ICONS & TIERS)
+     1. SERVICES GRID (WITH DETAIL BUTTONS & MODAL)
 ===================================================== -->
 
 <section class="services-section">
@@ -1480,6 +1262,10 @@ footer {
                     <li>Design System with CSS Variables</li>
                 </ul>
                 <div class="service-action-wrap">
+                    <button class="service-details-btn" data-service="service1">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        View Full Details ℹ
+                    </button>
                     <a href="contact.html" class="service-card-btn">Inquire This Service →</a>
                 </div>
             </div>
@@ -1505,6 +1291,10 @@ footer {
                     <li>Zero Unnecessary Heavy Libraries</li>
                 </ul>
                 <div class="service-action-wrap">
+                    <button class="service-details-btn" data-service="service2">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        View Full Details ℹ
+                    </button>
                     <a href="contact.html" class="service-card-btn">Inquire This Service →</a>
                 </div>
             </div>
@@ -1529,6 +1319,10 @@ footer {
                     <li>Lead Capture & Security Verification</li>
                 </ul>
                 <div class="service-action-wrap">
+                    <button class="service-details-btn" data-service="service3">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        View Full Details ℹ
+                    </button>
                     <a href="contact.html" class="service-card-btn">Inquire This Service →</a>
                 </div>
             </div>
@@ -1553,6 +1347,10 @@ footer {
                     <li>Touch Ergonomics for Mobile Users</li>
                 </ul>
                 <div class="service-action-wrap">
+                    <button class="service-details-btn" data-service="service4">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        View Full Details ℹ
+                    </button>
                     <a href="contact.html" class="service-card-btn">Inquire This Service →</a>
                 </div>
             </div>
@@ -1566,17 +1364,21 @@ footer {
                     <span class="service-number">05 / CLOUD</span>
                 </div>
                 <h3>Auth & Database Integrations</h3>
-                <p>Integrating Google Firebase Auth, Cloud Firestore databases, and secure spam-protected email notification systems.</p>
+                <p>Integrating modern authentication, Cloud database solutions, and secure spam-protected lead notification pipelines.</p>
                 <div class="service-meta-pills">
                     <span class="price">Starting ₹9,000</span>
                     <span class="timeline">4 - 6 Days</span>
                 </div>
                 <ul class="service-features">
-                    <li>Google Sign-In & Session Persistence[cite: 1]</li>
+                    <li>Secure User Auth & Persistent Sessions</li>
                     <li>EmailJS Instant Lead Alerts</li>
                     <li>Google reCAPTCHA v2 Bot Defense</li>
                 </ul>
                 <div class="service-action-wrap">
+                    <button class="service-details-btn" data-service="service5">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        View Full Details ℹ
+                    </button>
                     <a href="contact.html" class="service-card-btn">Inquire This Service →</a>
                 </div>
             </div>
@@ -1601,6 +1403,10 @@ footer {
                     <li>Periodic Speed & Code Optimization</li>
                 </ul>
                 <div class="service-action-wrap">
+                    <button class="service-details-btn" data-service="service6">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        View Full Details ℹ
+                    </button>
                     <a href="contact.html" class="service-card-btn">Inquire This Service →</a>
                 </div>
             </div>
@@ -1611,7 +1417,7 @@ footer {
 
 
 <!-- =====================================================
-     2. ARCHITECTURE & TECH MATRIX (EXPANDED PAGE CONTENT)
+     2. ARCHITECTURE & TECH MATRIX
 ===================================================== -->
 
 <section class="tech-section">
@@ -1654,8 +1460,8 @@ footer {
                 <div class="tech-card-icon">
                     <svg viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
                 </div>
-                <h4>Firebase & Cloud Sync</h4>
-                <p>OAuth Google authorization, token storage and secure cloud lead capture[cite: 1].</p>
+                <h4>Free Cloud Deployments</h4>
+                <p>Zero server cost fast deployments on Vercel, Netlify & GitHub Pages with free SSL.</p>
             </div>
         </div>
     </div>
@@ -1700,8 +1506,8 @@ footer {
                 <p class="pricing-desc">Comprehensive multi-page portfolio or commercial business website with full cloud features.</p>
                 <div class="pricing-cost">₹12,000 <span>/ project</span></div>
                 <ul class="pricing-features">
-                    <li>Up to 5 custom designed pages[cite: 1]</li>
-                    <li>Firebase Google Authentication[cite: 1]</li>
+                    <li>Up to 5 custom designed pages</li>
+                    <li>Free Vercel/Netlify cloud hosting</li>
                     <li>reCAPTCHA v2 bot protection</li>
                     <li>Figma to clean code conversion</li>
                     <li>7-10 business days delivery</li>
@@ -1799,8 +1605,8 @@ footer {
             </div>
 
             <div class="faq-item reveal">
-                <h4>Can you connect login and contact notifications?</h4>
-                <p>Yes. I integrate Firebase Google Auth, Cloud databases, and verified OTP-based lead messaging directly into your Gmail[cite: 1].</p>
+                <h4>Do I need expensive monthly hosting?</h4>
+                <p>No! I deploy your sites directly to Netlify or Vercel with free lifetime SSL certificates and fast global CDN, keeping your server cost zero.</p>
             </div>
 
             <div class="faq-item reveal">
@@ -1869,29 +1675,395 @@ footer {
 </footer>
 
 
-
 <!-- =====================================================
-     LOGIN MODAL
+     POPUP MODAL FOR ALL SERVICES
 ===================================================== -->
 
-<div class="login-modal" id="loginModal">
-    <div class="login-box">
-        <button class="close-login" id="closeLogin">×</button>
-        <div class="login-icon">W</div>
-        <h2>Login to continue</h2>
-        <p>Sign in with Google to explore features across the site.</p>
-        <button class="google-login" id="googleLogin">
-            <svg width="18" height="18" viewBox="0 0 24 24" style="margin-right:6px;">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            Continue with Google
-        </button>
-        <div class="login-error" id="loginError"></div>
+<div class="details-modal" id="detailsModal">
+    <div class="details-modal-box">
+        <button class="close-details-modal" id="closeDetailsModal" aria-label="Close modal">×</button>
+        
+        <div class="modal-header-banner">
+            <div class="modal-badge-row">
+                <span class="modal-tag" id="modalCategory">Frontend</span>
+                <span class="modal-price-tag" id="modalPrice">₹11,000</span>
+            </div>
+            <h2 id="modalTitle">Frontend Development</h2>
+            <p id="modalDesc">Comprehensive details and specifications for this service package.</p>
+        </div>
+
+        <div class="modal-scroll-content">
+            <div class="modal-specs-grid">
+                <!-- SPEC 1: WEBSITE TYPE -->
+                <div class="spec-item">
+                    <div class="spec-icon">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                    </div>
+                    <div class="spec-info">
+                        <small>Website Type</small>
+                        <strong id="modalWebType">Custom Interactive UI</strong>
+                    </div>
+                </div>
+
+                <!-- SPEC 2: PAGES -->
+                <div class="spec-item">
+                    <div class="spec-icon">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                    </div>
+                    <div class="spec-info">
+                        <small>Total Pages Included</small>
+                        <strong id="modalPages">Up to 5 Full Pages</strong>
+                    </div>
+                </div>
+
+                <!-- SPEC 3: MAINTENANCE -->
+                <div class="spec-item">
+                    <div class="spec-icon">
+                        <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                    </div>
+                    <div class="spec-info">
+                        <small>Free Maintenance</small>
+                        <strong id="modalMaintenance">1 Month (Bug-free support)</strong>
+                    </div>
+                </div>
+
+                <!-- SPEC 4: HOSTING & DOMAIN -->
+                <div class="spec-item">
+                    <div class="spec-icon">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    </div>
+                    <div class="spec-info">
+                        <small>Hosting & Domain</small>
+                        <strong id="modalHosting">Free Netlify/Vercel + DNS Attach</strong>
+                    </div>
+                </div>
+
+                <!-- SPEC 5: DELIVERY TIME -->
+                <div class="spec-item">
+                    <div class="spec-icon">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    </div>
+                    <div class="spec-info">
+                        <small>Delivery Timeline</small>
+                        <strong id="modalTimeline">7 - 10 Business Days</strong>
+                    </div>
+                </div>
+
+                <!-- SPEC 6: TECH STACK -->
+                <div class="spec-item">
+                    <div class="spec-icon">
+                        <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                    </div>
+                    <div class="spec-info">
+                        <small>Tech Stack</small>
+                        <strong id="modalTechStack">HTML5, CSS3, Vanilla JS</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INCLUDED DELIVERABLES -->
+            <div class="modal-features-card">
+                <h4>What Is Included In This Package:</h4>
+                <ul class="modal-features-list" id="modalFeaturesList">
+                    <!-- Dynamic Items via JS -->
+                </ul>
+            </div>
+        </div>
+
+        <div class="modal-footer-action">
+            <button class="modal-close-text-btn" id="modalCloseBtn">Close</button>
+            <a href="contact.html" class="modal-contact-btn">
+                Inquire For This Service →
+            </a>
+        </div>
     </div>
 </div>
+
+
+<!-- =====================================================
+     VANILLA JAVASCRIPT (MODAL & INTERACTIONS)
+===================================================== -->
+
+<script>
+
+/* =====================================================
+   SERVICES DATA REPOSITORY FOR POPUP
+===================================================== */
+
+const servicesDatabase = {
+    service1: {
+        category: "01 / DESIGN",
+        title: "Custom Web Design",
+        price: "Starting ₹7,000",
+        desc: "High-end bespoke visual design crafted in Figma and transformed into responsive pixel-perfect HTML/CSS structures.",
+        webType: "Brand Identity, Portfolio & Corporate UI",
+        pages: "3 - 5 Unique Layout Pages",
+        maintenance: "1 Month Free Revisions & Bug Fixes",
+        hosting: "Free Hosting on Netlify/Vercel + Custom Domain DNS Setup",
+        timeline: "5 - 7 Business Days",
+        techStack: "Figma, Modern CSS3, Fluid Clamping, SVG",
+        deliverables: [
+            "Figma component wireframes & responsive designs",
+            "Full mobile, tablet and desktop fluid layouts",
+            "CSS design token system (variables, typography scale)",
+            "Optimized SVG iconography & high-res image compression",
+            "100% W3C valid, clean semantic HTML5 markup",
+            "Free deployment setup on Netlify / Vercel with SSL"
+        ]
+    },
+    service2: {
+        category: "02 / FRONTEND",
+        title: "Frontend Development",
+        price: "Starting ₹11,000",
+        desc: "Super fast, interactive web applications crafted with semantic HTML5, modern CSS3 animations, and clean modular JavaScript.",
+        webType: "Interactive Web App / Multi-Page Business Site",
+        pages: "Up to 5 - 7 Full Functional Pages",
+        maintenance: "2 Months Free Technical Support & Maintenance",
+        hosting: "100% Free Lifetime Hosting on Vercel / Netlify",
+        timeline: "7 - 10 Business Days",
+        techStack: "Semantic HTML5, CSS3, Vanilla JS ES6+, Git",
+        deliverables: [
+            "Ultra-smooth page load speeds (95+ Google Lighthouse score)",
+            "Dynamic state management & custom interactive modals",
+            "Zero bulky JavaScript libraries or unnecessary dependencies",
+            "Custom domain DNS configuration (Godaddy, Namecheap, etc.)",
+            "Free SSL encryption certificate included forever",
+            "Cross-browser testing across Chrome, Safari, Edge and Firefox"
+        ]
+    },
+    service3: {
+        category: "03 / CONVERSION",
+        title: "High-Converting Landing Pages",
+        price: "Starting ₹5,000",
+        desc: "Single-page marketing funnel sites engineered to turn ad traffic into real inquiries, sales and qualified leads.",
+        webType: "High-Velocity Marketing Funnel / Product Showcase",
+        pages: "1 Single Deep-Scroll Page (5-7 Sections)",
+        maintenance: "1 Month Free Speed & Form Audits",
+        hosting: "Free Cloud Deployment (Vercel / Netlify / GitHub)",
+        timeline: "3 - 5 Business Days",
+        techStack: "HTML5, Glassmorphism CSS, JS, EmailJS Integration",
+        deliverables: [
+            "High-impact Hero section designed for maximum click-through",
+            "Load time under 1.5 seconds worldwide on CDN",
+            "Functional EmailJS / WhatsApp direct inquiry triggers",
+            "Google reCAPTCHA v2 bot and spam defense integrated",
+            "Custom domain attachment with zero hosting renewal cost",
+            "OpenGraph social preview metadata for WhatsApp & Facebook"
+        ]
+    },
+    service4: {
+        category: "04 / REDESIGN",
+        title: "Website Revamp & Redesign",
+        price: "Starting ₹12,000",
+        desc: "Upgrading sluggish, outdated legacy templates into contemporary, responsive and aesthetically polished platforms.",
+        webType: "Modernization of Existing Business / Corporate Websites",
+        pages: "Same as existing (Up to 8 Pages Redesigned)",
+        maintenance: "2 Months Free Performance & Bug Support",
+        hosting: "Server migration to Free Netlify/Vercel included",
+        timeline: "6 - 8 Business Days",
+        techStack: "Modern UI/UX, CSS Grid, Clean ES6+, Asset CDN",
+        deliverables: [
+            "Complete visual overhaul with modern glassmorphism & gradients",
+            "Elimination of slow bloated legacy code and obsolete plugins",
+            "Core Web Vitals acceleration (LCP, FID, CLS optimized)",
+            "Flawless touch ergonomics for mobile and tablet visitors",
+            "Zero downtime seamless migration to fast free cloud servers",
+            "Full backup of legacy site and DNS transfer assistance"
+        ]
+    },
+    service5: {
+        category: "05 / CLOUD",
+        title: "Auth & Database Integrations",
+        price: "Starting ₹9,000",
+        desc: "Integrating modern cloud features, persistent database storage, and secure spam-protected lead notification pipelines.",
+        webType: "Dynamic Cloud-Backed Web Platform",
+        pages: "Integration into Any Number of Existing Pages",
+        maintenance: "1.5 Months Free API & Security Support",
+        hosting: "Free Cloud Hosting + Serverless Functions",
+        timeline: "4 - 6 Business Days",
+        techStack: "REST APIs, Cloud Firestore / Supabase, EmailJS, JS",
+        deliverables: [
+            "Persistent session management and user profile logic",
+            "Real-time contact inquiry forwarding directly to your Gmail inbox",
+            "Spam filtering with Google reCAPTCHA protection",
+            "Netlify serverless functions or cloud webhook integrations",
+            "Environment variable security (API keys hidden from public view)",
+            "Complete testing documentation and verification"
+        ]
+    },
+    service6: {
+        category: "06 / SUPPORT",
+        title: "Ongoing Maintenance & AMC",
+        price: "Monthly Retainer (₹6,500/mo)",
+        desc: "Continuous bug fixes, design enhancements, uptime monitoring, and security adjustments for live web apps.",
+        webType: "Any Live Web Application or Business Portal",
+        pages: "All Pages Covered Under Retainer",
+        maintenance: "Continuous 24/7 Priority Support",
+        hosting: "Hosting Uptime Monitoring & Domain SSL Renewal Watch",
+        timeline: "Instant Turnaround (< 24 Hours per request)",
+        techStack: "Full Frontend Stack & Cloud DNS Tools",
+        deliverables: [
+            "Regular content, text, image and banner updates on demand",
+            "Periodic speed audits and CSS/JS code minification",
+            "Domain expiration warnings & free SSL certificate renewal verification",
+            "Immediate bug fixing if external APIs change or break",
+            "Monthly performance & uptime status report",
+            "Direct priority WhatsApp & Phone communication"
+        ]
+    }
+};
+
+
+/* =====================================================
+   MODAL CONTROLLER LOGIC
+===================================================== */
+
+const detailsModal = document.getElementById("detailsModal");
+const closeDetailsModal = document.getElementById("closeDetailsModal");
+const modalCloseBtn = document.getElementById("modalCloseBtn");
+
+// Modal Elements
+const modalCategory = document.getElementById("modalCategory");
+const modalPrice = document.getElementById("modalPrice");
+const modalTitle = document.getElementById("modalTitle");
+const modalDesc = document.getElementById("modalDesc");
+const modalWebType = document.getElementById("modalWebType");
+const modalPages = document.getElementById("modalPages");
+const modalMaintenance = document.getElementById("modalMaintenance");
+const modalHosting = document.getElementById("modalHosting");
+const modalTimeline = document.getElementById("modalTimeline");
+const modalTechStack = document.getElementById("modalTechStack");
+const modalFeaturesList = document.getElementById("modalFeaturesList");
+
+function openServiceDetails(serviceKey) {
+    const data = servicesDatabase[serviceKey];
+    if (!data) return;
+
+    modalCategory.textContent = data.category;
+    modalPrice.textContent = data.price;
+    modalTitle.textContent = data.title;
+    modalDesc.textContent = data.desc;
+    modalWebType.textContent = data.webType;
+    modalPages.textContent = data.pages;
+    modalMaintenance.textContent = data.maintenance;
+    modalHosting.textContent = data.hosting;
+    modalTimeline.textContent = data.timeline;
+    modalTechStack.textContent = data.techStack;
+
+    // Render Deliverables
+    modalFeaturesList.innerHTML = "";
+    data.deliverables.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        modalFeaturesList.appendChild(li);
+    });
+
+    detailsModal.classList.add("show");
+    document.body.classList.add("modal-open");
+}
+
+function closeServiceDetails() {
+    detailsModal.classList.remove("show");
+    document.body.classList.remove("modal-open");
+}
+
+// Bind Buttons
+document.querySelectorAll(".service-details-btn").forEach(btn => {
+    btn.addEventListener("click", function(e) {
+        e.preventDefault();
+        const serviceKey = this.getAttribute("data-service");
+        openServiceDetails(serviceKey);
+    });
+});
+
+if (closeDetailsModal) {
+    closeDetailsModal.addEventListener("click", closeServiceDetails);
+}
+
+if (modalCloseBtn) {
+    modalCloseBtn.addEventListener("click", closeServiceDetails);
+}
+
+if (detailsModal) {
+    detailsModal.addEventListener("click", function(event) {
+        if (event.target === detailsModal) {
+            closeServiceDetails();
+        }
+    });
+}
+
+// Close with Escape Key
+document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape" && detailsModal.classList.contains("show")) {
+        closeServiceDetails();
+    }
+});
+
+
+/* =====================================================
+   MOBILE NAVIGATION
+===================================================== */
+
+const menuButton = document.querySelector(".menu-button");
+const nav = document.querySelector(".nav-links");
+
+if (menuButton && nav) {
+    menuButton.addEventListener("click", function() {
+        nav.classList.toggle("open");
+    });
+
+    document.querySelectorAll(".nav-links a").forEach(function(link) {
+        link.addEventListener("click", function() {
+            nav.classList.remove("open");
+        });
+    });
+}
+
+
+/* =====================================================
+   SCROLL REVEAL ANIMATIONS
+===================================================== */
+
+const revealObserver = new IntersectionObserver(
+    function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add("show");
+                revealObserver.unobserve(entry.target);
+            }
+        });
+    },
+    { threshold: 0.12 }
+);
+
+document.querySelectorAll(".reveal").forEach(function(element) {
+    revealObserver.observe(element);
+});
+
+
+/* =====================================================
+   CUSTOM CURSOR
+===================================================== */
+
+const cursor = document.querySelector(".custom-cursor");
+
+if (cursor && window.matchMedia("(pointer:fine)").matches) {
+    document.addEventListener("mousemove", function(event) {
+        cursor.style.left = event.clientX + "px";
+        cursor.style.top = event.clientY + "px";
+    });
+
+    document.querySelectorAll("a,button,.service-card,.feature-card,.pricing-card,.faq-item,.tech-card").forEach(function(element) {
+        element.addEventListener("mouseenter", function() {
+            cursor.classList.add("big");
+        });
+        element.addEventListener("mouseleave", function() {
+            cursor.classList.remove("big");
+        });
+    });
+}
+
+</script>
 
 </body>
 </html>
